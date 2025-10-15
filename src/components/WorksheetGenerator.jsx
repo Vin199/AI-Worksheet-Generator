@@ -66,7 +66,7 @@ export default function WorksheetGenerator() {
     board: '',
     grade: '',
     subject: '',
-    section: '',
+    // section: '',
     topic: '',
     numQuestions: 10,
     questionDist: {
@@ -149,9 +149,14 @@ export default function WorksheetGenerator() {
       });
       if (handleTokenExpiry(res)) return;
       const data = await res.json();
-      if (res.ok) setBoards(data);
+      if (res.ok) {
+        setBoards(data);
+      } else {
+        setError(data.message || data.detail || 'Failed to load boards. Please try again.');
+      }
     } catch (e) {
-      console.error(e);
+      console.error('Error loading boards:', e);
+      setError('Network error while loading boards. Please check your connection and try again.');
     }
   };
 
@@ -162,9 +167,14 @@ export default function WorksheetGenerator() {
       });
       if (handleTokenExpiry(res)) return;
       const data = await res.json();
-      if (res.ok) setGrades(data);
+      if (res.ok) {
+        setGrades(data);
+      } else {
+        setError(data.message || data.detail || 'Failed to load grades. Please try again.');
+      }
     } catch (e) {
-      console.error(e);
+      console.error('Error loading grades:', e);
+      setError('Network error while loading grades. Please check your connection and try again.');
     }
   };
 
@@ -175,9 +185,14 @@ export default function WorksheetGenerator() {
       });
       if (handleTokenExpiry(res)) return;
       const data = await res.json();
-      if (res.ok) setSubjects(data);
+      if (res.ok) {
+        setSubjects(data);
+      } else {
+        setError(data.message || data.detail || 'Failed to load subjects. Please try again.');
+      }
     } catch (e) {
-      console.error(e);
+      console.error('Error loading subjects:', e);
+      setError('Network error while loading subjects. Please check your connection and try again.');
     }
   };
 
@@ -193,7 +208,7 @@ export default function WorksheetGenerator() {
     form.append('question_distribution', JSON.stringify(formData.questionDist));
     form.append('difficulty_level_distribution', JSON.stringify(formData.difficultyDist));
     form.append('bloom_taxonomy_distribution', JSON.stringify(formData.bloomDist));
-    if (formData.section) form.append('section', formData.section);
+    // if (formData.section) form.append('section', formData.section);
     if (formData.topic) form.append('topic', formData.topic);
 
     try {
@@ -227,13 +242,20 @@ export default function WorksheetGenerator() {
       const res = await fetch(`${API_BASE}/worksheet/v1/metadata/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (handleTokenExpiry(res)) return;
+      if (handleTokenExpiry(res)) {
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (res.ok && data.data) {
         // Check if status is Completed before proceeding
         if (data.data.status === 'Completed') {
           setMetadata(data.data);
           setStep(3);
+          setLoading(false);
+        } else if (data.data.status === 'Failed' || data.data.status === 'Error') {
+          // Handle failed status - stop polling
+          setError(data.data.error_message || 'Metadata generation failed. Please try again.');
           setLoading(false);
         } else if (data.data.status === 'In Progress') {
           // Still in progress, keep polling
@@ -243,11 +265,18 @@ export default function WorksheetGenerator() {
           setTimeout(() => fetchMetadata(id), 5000);
         }
       } else if (res.status === 404) {
+        // Continue polling for 404 as resource might not be ready yet
         setTimeout(() => fetchMetadata(id), 5000);
+      } else {
+        // API returned an error - stop polling
+        setError(data.message || data.detail || 'Failed to fetch metadata. Please try again.');
+        setLoading(false);
       }
     } catch (e) {
-      console.log(e);
-      setTimeout(() => fetchMetadata(id), 5000);
+      console.error('Error fetching metadata:', e);
+      // Network error - stop polling and show error
+      setError('Network error while fetching metadata. Please check your connection and try again.');
+      setLoading(false);
     }
   };
 
@@ -291,13 +320,20 @@ export default function WorksheetGenerator() {
       const res = await fetch(`${API_BASE}/worksheet/v1/question-config/${worksheetId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (handleTokenExpiry(res)) return;
+      if (handleTokenExpiry(res)) {
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (res.ok && data.data) {
         // Check if status is Completed and question_configuration exists
         if (data.data.status === 'Completed' && data.data.question_configuration) {
           setQuestionConfig(data.data.question_configuration);
           setStep(4);
+          setLoading(false);
+        } else if (data.data.status === 'Failed' || data.data.status === 'Error') {
+          // Handle failed status - stop polling
+          setError(data.data.error_message || 'Question configuration failed. Please try again.');
           setLoading(false);
         } else if (data.data.status === 'In Progress') {
           // Still in progress, keep polling
@@ -306,12 +342,19 @@ export default function WorksheetGenerator() {
           // Unknown status or missing config, keep polling
           setTimeout(() => fetchQuestionConfig(), 5000);
         }
-      } else {
+      } else if (res.status === 404) {
+        // Continue polling for 404 as resource might not be ready yet
         setTimeout(() => fetchQuestionConfig(), 5000);
+      } else {
+        // API returned an error - stop polling
+        setError(data.message || data.detail || 'Failed to fetch question configuration. Please try again.');
+        setLoading(false);
       }
     } catch (e) {
-      console.log(e);
-      setTimeout(() => fetchQuestionConfig(), 5000);
+      console.error('Error fetching question config:', e);
+      // Network error - stop polling and show error
+      setError('Network error while fetching question configuration. Please check your connection and try again.');
+      setLoading(false);
     }
   };
 
@@ -352,13 +395,24 @@ export default function WorksheetGenerator() {
       const res = await fetch(`${API_BASE}/worksheet/v1/generate-worksheet/${worksheetId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (handleTokenExpiry(res)) return;
+      if (handleTokenExpiry(res)) {
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (res.ok && data.data) {
         // Check if status is Completed and questions are generated
         if (data.data.status === 'Completed' && data.data.questions && data.data.questions.msg !== 'No questions generated.') {
           setWorksheet(data.data);
           setStep(5);
+          setLoading(false);
+        } else if (data.data.status === 'Completed' && data.data.questions?.msg === 'No questions generated.') {
+          // Completed but no questions generated - stop polling
+          setError('No questions were generated. Please adjust your configuration and try again.');
+          setLoading(false);
+        } else if (data.data.status === 'Failed' || data.data.status === 'Error') {
+          // Handle failed status - stop polling
+          setError(data.data.error_message || 'Worksheet generation failed. Please try again.');
           setLoading(false);
         } else if (data.data.status === 'In Progress') {
           // Still in progress, keep polling
@@ -367,12 +421,19 @@ export default function WorksheetGenerator() {
           // Unknown status or error, keep polling
           setTimeout(() => fetchWorksheet(), 5000);
         }
-      } else {
+      } else if (res.status === 404) {
+        // Continue polling for 404 as resource might not be ready yet
         setTimeout(() => fetchWorksheet(), 5000);
+      } else {
+        // API returned an error - stop polling
+        setError(data.message || data.detail || 'Failed to fetch worksheet. Please try again.');
+        setLoading(false);
       }
     } catch (e) {
-      console.log(e);
-      setTimeout(() => fetchWorksheet(), 5000);
+      console.error('Error fetching worksheet:', e);
+      // Network error - stop polling and show error
+      setError('Network error while fetching worksheet. Please check your connection and try again.');
+      setLoading(false);
     }
   };
 
@@ -394,7 +455,7 @@ export default function WorksheetGenerator() {
       board: '',
       grade: '',
       subject: '',
-      section: '',
+      // section: '',
       topic: '',
       numQuestions: 10,
       questionDist: {
@@ -634,18 +695,7 @@ export default function WorksheetGenerator() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Section (optional)</label>
-                <input
-                  type="text"
-                  placeholder="Enter section"
-                  className="w-full p-3 border rounded"
-                  value={formData.section}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, section: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Topic (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
                 <input
                   type="text"
                   placeholder="Enter topic"
@@ -654,6 +704,17 @@ export default function WorksheetGenerator() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, topic: e.target.value }))}
                 />
               </div>
+
+              {/* <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Section (optional)</label>
+                <input
+                  type="text"
+                  placeholder="Enter section"
+                  className="w-full p-3 border rounded"
+                  value={formData.section}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, section: e.target.value }))}
+                />
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Number of Questions</label>
@@ -695,10 +756,8 @@ export default function WorksheetGenerator() {
                         {k}
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         placeholder="0"
-                        min="0"
-                        max="100"
                         className="w-full p-2 border rounded text-sm"
                         value={v}
                         onChange={(e) => updateDistribution('difficultyDist', k, e.target.value)}
@@ -720,10 +779,8 @@ export default function WorksheetGenerator() {
                         {k}
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         placeholder="0"
-                        min="0"
-                        max="100"
                         className="w-full p-2 border rounded text-sm"
                         value={v}
                         onChange={(e) => updateDistribution('bloomDist', k, e.target.value)}

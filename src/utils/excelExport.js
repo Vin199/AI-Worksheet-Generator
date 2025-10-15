@@ -13,35 +13,35 @@ export function exportWorksheetToExcel(worksheetData) {
   const questionTypeConfig = {
     mcq_single_answer: {
       sheetName: 'MCQ Single Answer',
-      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     mcq_multiple_answer: {
       sheetName: 'MCQ Multiple Answer',
-      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Option E', 'Option F', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Option E', 'Option F', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     true_false: {
       sheetName: 'True False',
-      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     fill_in_the_blanks: {
       sheetName: 'Fill in the Blanks',
-      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     very_short_answer: {
       sheetName: 'Very Short Answer',
-      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     short_answer: {
       sheetName: 'Short Answer',
-      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     long_answer: {
       sheetName: 'Long Answer',
-      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     },
     match_the_column: {
       sheetName: 'Match the Column',
-      columns: ['Question No.', 'Question', 'Column A', 'Column B', 'Answer', 'Learning Objectives', 'Bloom Level', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Column A', 'Column B', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
     }
   };
 
