@@ -561,7 +561,7 @@ export default function WorksheetGenerator() {
           {/* Step 1: Login */}
           {step === 1 && (
             <div className="min-h-[500px] flex items-center justify-center">
-              <div className="w-full max-w-md space-y-8">
+              <div className="w-full max-w-[30rem] space-y-8">
                 {/* Logo and Title */}
                 <div className="text-center space-y-4">
                   <div className="flex justify-center">
@@ -570,7 +570,7 @@ export default function WorksheetGenerator() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-center gap-2">
                       <Sparkles className="w-6 h-6 text-indigo-600" />
-                      <h2 className="text-3xl font-bold text-gray-900">iPrep AI Worksheet Generator</h2>
+                      <h2 className="text-3xl font-bold text-gray-900">iPrep AI Assessment Generator</h2>
                     </div>
                     <p className="text-gray-600">Generate personalized worksheets with AI-powered intelligence</p>
                   </div>
