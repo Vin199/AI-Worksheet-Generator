@@ -147,7 +147,7 @@ export function exportWorksheetToExcel(worksheetData) {
         row.push(question?.explanations[0]?.explanation || '');
         let keyConcepts = '';
         question?.explanations[0]?.key_concepts.forEach((str) => {
-          keyConcepts += str + "\n";
+          keyConcepts += str + "," + "\n";
         })
         row.push(keyConcepts || '');
         row.push(question?.explanations[0]?.common_mistakes || '');
