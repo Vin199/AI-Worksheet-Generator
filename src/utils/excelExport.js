@@ -13,7 +13,7 @@ export function exportWorksheetToExcel(worksheetData) {
   const questionTypeConfig = {
     mcq_single_answer: {
       sheetName: 'MCQ Single Answer',
-      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty']
+      columns: ['Question No.', 'Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Answer', 'Learning Objectives', 'Bloom Taxonomy', 'Difficulty', 'Learning Objective Explanation', 'Explanation', 'Key Concepts', 'Common Mistakes', 'Real World Application']
     },
     mcq_multiple_answer: {
       sheetName: 'MCQ Multiple Answer',
@@ -141,6 +141,19 @@ export function exportWorksheetToExcel(worksheetData) {
         row.push('', '', '');
       }
 
+      //Explanations
+      if(question?.explanations && Array.isArray(question?.explanations) && question?.explanations.length > 0){
+        row.push(question?.explanations[0]?.learning_objective || '');
+        row.push(question?.explanations[0]?.explanation || '');
+        let keyConcepts = '';
+        question?.explanations[0]?.key_concepts.forEach((str) => {
+          keyConcepts += str + "\n";
+        })
+        row.push(keyConcepts || '');
+        row.push(question?.explanations[0]?.common_mistakes || '');
+        row.push(question?.explanations[0]?.real_world_application || '');
+      }
+
       sheetData.push(row);
     });
 
@@ -169,6 +182,9 @@ export function exportWorksheetToExcel(worksheetData) {
 
     // Tags columns
     colWidths.push({ wch: 40 }, { wch: 15 }, { wch: 12 });
+
+    //Explanation columns
+    colWidths.push({ wch: 80 }, { wch: 80 }, { wch: 20 }, { wch: 80 }, { wch: 80 });
 
     worksheet['!cols'] = colWidths;
 

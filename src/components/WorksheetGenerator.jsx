@@ -403,9 +403,10 @@ export default function WorksheetGenerator() {
       if (res.ok && data.data) {
         // Check if status is Completed and questions are generated
         if (data.data.status === 'Completed' && data.data.questions && data.data.questions.msg !== 'No questions generated.') {
-          setWorksheet(data.data);
-          setStep(5);
-          setLoading(false);
+          //setWorksheet(data.data);
+          //setStep(5);
+          //setLoading(false);
+          setTimeout(() => generateDetailedWorksheet(), 1500);
         } else if (data.data.status === 'Completed' && data.data.questions?.msg === 'No questions generated.') {
           // Completed but no questions generated - stop polling
           setError('No questions were generated. Please adjust your configuration and try again.');
@@ -436,6 +437,86 @@ export default function WorksheetGenerator() {
       setLoading(false);
     }
   };
+
+  const generateDetailedWorksheet = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/worksheet/v1/generate-explanations/${worksheetId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      if (handleTokenExpiry(res)) {
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (res.ok) {
+        //setSuccess('Worksheet generation started!');
+        setTimeout(() => fetchDetailedWorksheet(), 20000);
+      } else {
+        setError(data.detail?.[0]?.msg || 'Failed to generate detailed worksheet');
+        setLoading(false);
+      }
+    } catch (e) {
+      console.log(e);
+      setError('Network error');
+      setLoading(false);
+    }
+  };
+
+  const fetchDetailedWorksheet = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/worksheet/v1/generate-explanations/${worksheetId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (handleTokenExpiry(res)) {
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (res.ok && data.data) {
+        // Check if status is Completed and questions are generated
+        if (data.data.status === 'Completed' && data.data.questions && data.data.questions.msg !== 'No questions generated.') {
+          setWorksheet(data.data);
+          setStep(5);
+          setLoading(false);
+        } else if (data.data.status === 'Completed' && data.data.questions?.msg === 'No questions generated.') {
+          // Completed but no questions generated - stop polling
+          setError('No questions were generated. Please adjust your configuration and try again.');
+          setLoading(false);
+        } else if (data.data.status === 'Failed' || data.data.status === 'Error') {
+          // Handle failed status - stop polling
+          setError(data.data.error_message || 'Detailed worksheet generation failed. Please try again.');
+          setLoading(false);
+        } else if (data.data.status === 'In Progress') {
+          // Still in progress, keep polling
+          setTimeout(() => fetchDetailedWorksheet(), 5000);
+        } else {
+          // Unknown status or error, keep polling
+          setTimeout(() => fetchDetailedWorksheet(), 5000);
+        }
+      } else if (res.status === 404) {
+        // Continue polling for 404 as resource might not be ready yet
+        setTimeout(() => fetchDetailedWorksheet(), 5000);
+      } else if(res.status === 400) {
+        console.log(data);
+        //&& data?.details[0]?.status === "In Progress"
+        setTimeout(() => fetchDetailedWorksheet(), 4000);
+      } else {
+        // API returned an error - stop polling
+        setError(data.message || data.detail || 'Failed to fetch detailed worksheet. Please try again.');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching detailed worksheet:', error);
+      // Network error - stop polling and show error
+      setError('Network error while fetching detailed worksheet. Please check your connection and try again.');
+      setLoading(false);
+    }
+  }
 
   const updateDistribution = (type, key, value) => {
     setFormData((prev) => ({
